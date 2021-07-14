@@ -27,6 +27,29 @@ function ProfileSideBar(propriedades) {
 }
 
 
+function ProfileRelationsBox(propriedades) {
+  return (
+    <ProfileRelationsBoxWrapper>
+      <h2 className="smallTitle">
+        {propriedades.title} ({propriedades.items.length})
+      </h2>
+      <ul>
+        {/* {seguidores.map((itemAtual) => {
+          return (
+            <li key={itemAtual}>
+              <a href={`https://github.com/${itemAtual}.png`}>
+                <img src={itemAtual.image} />
+                <span>{itemAtual.title}</span>
+              </a>
+            </li>
+          )
+        })} */}
+      </ul>
+    </ProfileRelationsBoxWrapper>
+  )
+}
+
+
 export default function Home() {
   const user = 'rmmariano'
 
@@ -52,8 +75,26 @@ export default function Home() {
     'felipefialho'
   ]
 
+  const [seguidores, setSeguidores] = React.useState([]);
+  // por padrão useEffect é executado sempre que algum evento é chamado
+  // então coloca o array vazio como segundo parâmetro para executar uma vez
+  React.useEffect(function() {
+    fetch(`https://api.github.com/users/${user}/followers`)
+    .then(function (respostaDoServidor) {
+      return respostaDoServidor.json()
+    })
+    .then(function(respostaCompleta) {
+      setSeguidores(respostaCompleta)
+    })
+  }, [])
+
+  console.log('seguidores antes do return', seguidores);
+
+  // 1 - Criar um box que vai ter um map, baseado nos items do array
+  // que pegamos do GitHub
+
   return (
-    // <></> não tem valor semantico, é apenas organizacional
+    // <></> não tem valor semântico, é apenas organizacional
     <>
       <AlurakutMenu/>
       <MainGrid>
@@ -112,6 +153,8 @@ export default function Home() {
         </div>
 
         <div className='profileRelationsArea' style={{ gridArea: 'profileRelationsArea'}}>
+          <ProfileRelationsBox title="Seguidores" items={seguidores} />
+
           <ProfileRelationsBoxWrapper>
             <h2 className="smallTitle">
               Comunidades ({comunidades.length})
@@ -148,6 +191,7 @@ export default function Home() {
               })}
             </ul>
           </ProfileRelationsBoxWrapper>
+
           <Box>
             Amigos
           </Box>
