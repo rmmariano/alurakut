@@ -1,4 +1,6 @@
 import React from 'react'
+import nookies from 'nookies'
+import jwt from 'jsonwebtoken'
 
 import Box from '../src/components/Box'
 import MainGrid from '../src/components/MainGrid'
@@ -50,8 +52,10 @@ function ProfileRelationsBox(propriedades) {
 }
 
 
-export default function Home() {
-  const user = 'rmmariano'
+// props value is got from getServerSideProps
+export default function Home(props) {
+  // const user = 'rmmariano'
+  const user = props.githubUser;
 
   // `[]` is the initial state to this state
   const [comunidades, setComunidades] = React.useState([]);
@@ -238,4 +242,40 @@ export default function Home() {
       </MainGrid>
     </>
   )
+}
+
+export async function getServerSideProps(context) {
+  // this function runs inside server (bff), not on the client
+  // console.log('context: ', context)
+
+  const cookies = nookies.get(context)
+  const token = cookies.USER_TOKEN;
+  const { isAuthenticated } = await fetch(
+    'https://alurakut.vercel.app/api/auth',
+    {
+      headers: {
+        Authorization: token
+      }
+    }
+  )
+  .then((resposta) => resposta.json())
+
+  if(!isAuthenticated) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      }
+    }
+  }
+
+  // console.log('jwt.decode(token): ', jwt.decode(token))
+
+  const { githubUser } = jwt.decode(token);
+  return {
+    // this value goes to Home component
+    props: {
+      githubUser
+    }, // it will be passed to the page component as props
+  }
 }
